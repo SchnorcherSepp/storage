@@ -58,15 +58,17 @@ func InitDemo(s interf.Service) error {
 	const comp = 1 * 1024 * 1024    // 1 MB
 	const bundle = 12 * 1024 * 1024 // 12 MB
 
-	for _, size := range []int{fuse, fuse - 1, fuse + 1, buffer, buffer - 1, buffer + 1, comp, comp - 1, comp + 1, bundle, bundle - 1, bundle + 1} {
-		for _, rate := range []float32{0.99, 0.66, 0.33} {
+	for _, size := range []int{0, fuse, fuse - 1, fuse + 1, buffer, buffer - 1, buffer + 1, comp, comp - 1, comp + 1, bundle, bundle - 1, bundle + 1} {
+		for _, rate := range []float32{0.99, 0.66, 0.33, 0} {
 			// data
 			data := make([]byte, size)
 			rnd.Read(data)
 			for i := 0; i < int(float32(size)*rate); i++ {
 				data[i] = 'B'
 			}
-			data[0] = 'A'
+			if len(data) > 0 {
+				data[0] = 'A'
+			}
 
 			// save
 			name := fmt.Sprintf("special-file-%d-%f.dat", size, rate)
