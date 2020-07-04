@@ -206,8 +206,8 @@ func TestService_Update(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if count1+1 != count2 {
-		t.Fatalf("test fail: c1=%d, c2=%d", count1, count2)
+	if count1+1 != count2 { // there must be one file more
+		t.Fatalf("test fail: c1=%d, c2=%d", count1+1, count2)
 	}
 
 	// ----- test 4: Init WITH indexcache ----------------------------------------
