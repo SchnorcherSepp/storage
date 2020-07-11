@@ -90,6 +90,8 @@ func (r *_MReaderAt) Close() error {
 			}
 		}
 	}
+
+	r.stat.PrintStatAfterClose(r.multiFileId) // DEBUG
 	return nil
 }
 

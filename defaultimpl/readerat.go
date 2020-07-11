@@ -85,6 +85,8 @@ func (r *_ReaderAt) Close() error {
 			}
 		}
 	}
+
+	r.stat.PrintStatAfterClose(r.file.Id()) // DEBUG
 	return nil
 }
 

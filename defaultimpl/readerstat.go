@@ -1,9 +1,11 @@
 package impl
 
 import (
+	"fmt"
 	"github.com/SchnorcherSepp/storage/interfaces"
 	"io"
 	"log"
+	"strings"
 	"sync/atomic"
 )
 
@@ -50,6 +52,25 @@ func (s *_ReaderStat) Stat() map[string]uint64 {
 		}
 	}
 	return ret
+}
+
+func (s *_ReaderStat) PrintStatAfterClose(fileId string) {
+	// final call in .Close()
+
+	first := true
+	var sb strings.Builder
+	for k, v := range s.Stat() {
+		if !first {
+			sb.WriteString(", ")
+		} else {
+			first = false
+		}
+		sb.WriteString(k)
+		sb.WriteString("=")
+		sb.WriteString(fmt.Sprintf("%d", v))
+	}
+
+	log.Printf("INFO: %s/stat.PrintStatAfterClose: fileId=%s: %s", s.packageName, fileId, sb.String())
 }
 
 // ------------------------------------------------------------------------------------------------------------------ //
