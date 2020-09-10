@@ -24,17 +24,17 @@ type _ReaderAt struct {
 	inner []*_Reader   // open connections to the file (backbone)
 	stat  *_ReaderStat // collects statistical data about internal processes
 
-	file    interf.File     // for new connections
-	service interf.Service  // storage Service (for new connections)
-	cache   interf.Cache    // for caching sectors, can be nil !
-	pool    *bpool.BytePool // the byte pool avoids allocating memory
+	file    interf.File          // for new connections
+	service interf.ReaderService // storage Service (for new connections)
+	cache   interf.Cache         // for caching sectors, can be nil !
+	pool    *bpool.BytePool      // the byte pool avoids allocating memory
 
 }
 
 // NewReaderAt creates a new interf.ReaderAt object for random read access to the file.
 // No connections are made before the first call of ReadAt().
 // Is cache = nil, the cache is disabled.
-func NewReaderAt(file interf.File, service interf.Service, cache interf.Cache, debugLog bool) (interf.ReaderAt, error) {
+func NewReaderAt(file interf.File, service interf.ReaderService, cache interf.Cache, debugLog bool) (interf.ReaderAt, error) {
 	// check input
 	// the cache can be nil!
 	if file == nil || service == nil {

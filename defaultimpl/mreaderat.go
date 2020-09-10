@@ -12,7 +12,7 @@ import (
 // interface check: interf.ReaderAt
 var _ interf.ReaderAt = (*_MReaderAt)(nil)
 
-// @see interf.Service
+// @see interf.ReaderService
 // @see interf.ReaderAt
 //
 // MultiReaderAt allow random read access to a series of files identified by the file ids.
@@ -30,7 +30,7 @@ type _MReaderAt struct {
 // NewMultiReader combine two or more ReaderAt and behave like a normal ReaderAT for a single file.
 // All files except the last file must be the same size.
 // There must be at least two or more files!
-func NewMultiReaderAt(files []interf.File, service interf.Service, cache interf.Cache, debugLog bool) (interf.ReaderAt, error) {
+func NewMultiReaderAt(files []interf.File, service interf.ReaderService, cache interf.Cache, debugLog bool) (interf.ReaderAt, error) {
 	// ReaderAt statistic
 	stat := &_ReaderStat{
 		logging:     debugLog,       // enable debug logging

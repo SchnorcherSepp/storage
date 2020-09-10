@@ -4,6 +4,21 @@ import (
 	"io"
 )
 
+// ReaderService is an part of the Service and offers all reader functions.
+type ReaderService interface {
+
+	// Reader enables read access to a file identified by the file id.
+	// The connection must be closed manually with Close() after use.
+	// This method is thread-safe.
+	Reader(file File, off int64) (io.ReadCloser, error)
+
+	// LimitedReader enables read access to a file identified by the file id,
+	// but stops with EOF after n bytes. This method behaves like io.LimitedReader.
+	// The connection must be closed manually with Close() after use.
+	// This method is thread-safe.
+	LimitedReader(file File, off int64, n int64) (io.ReadCloser, error)
+}
+
 // Service is the central interface to access the storage.
 type Service interface {
 
@@ -33,16 +48,10 @@ type Service interface {
 	// This method is thread-safe.
 	Trash(file File) error
 
-	// Reader enables read access to a file identified by the file id.
-	// The connection must be closed manually with Close() after use.
-	// This method is thread-safe.
-	Reader(file File, off int64) (io.ReadCloser, error)
-
-	// LimitedReader enables read access to a file identified by the file id,
-	// but stops with EOF after n bytes. This method behaves like io.LimitedReader.
-	// The connection must be closed manually with Close() after use.
-	// This method is thread-safe.
-	LimitedReader(file File, off int64, n int64) (io.ReadCloser, error)
+	// ReaderService implements
+	// - Reader
+	// - LimitedReader
+	ReaderService
 
 	// ReaderAt allow random read access to a file identified by the file id.
 	// A cache must be used internally for random read access.
