@@ -99,6 +99,7 @@ func (s *_GService) Files() interf.Files {
 }
 
 // Save is the implementation of Service.Save()
+// The Google API does not set the values 'size' and 'md5'!
 //
 // Save reads bytes from the io.Reader r and saves them in (google) drive.
 // The file name can exist multiple times and existing files with the same name are not overwritten.
