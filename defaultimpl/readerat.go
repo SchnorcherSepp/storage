@@ -126,6 +126,12 @@ func (r *_ReaderAt) ReadAt(p []byte, off int64) (n int, err error) {
 
 		// exit
 		if n == 0 || err != nil || read == len(p) {
+			// exit loop, but ...
+			// ... fix wrong EOF
+			if err == io.EOF && len(p) == read && n > 0 {
+				err = nil // a full buffer with data is never io.EOF
+			}
+			// write debug and return
 			r.stat.RAtRet(r.file.Id(), off, len(p), read, err) // DEBUG
 			return read, err
 		}
