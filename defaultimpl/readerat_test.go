@@ -53,8 +53,8 @@ func Test_ReaderAt_ReadAt__without_cache(t *testing.T) {
 	}
 
 	// CHECK internal activities
-	ts.RAtNew++ // NewReaderAt() is called    !!!  ReadAt with invalid buffer don't count !!!
-	ts.Check()  //--------------------------------------------------------------------------------
+	ts.RAtNew++   // NewReaderAt() is called    !!!  ReadAt with invalid buffer don't count !!!
+	ts.Check("A") //--------------------------------------------------------------------------------
 
 	// test READ: request 1 byte AND invalid offset
 	b := make([]byte, 1)
@@ -66,7 +66,7 @@ func Test_ReaderAt_ReadAt__without_cache(t *testing.T) {
 	ts.RAtReq++       // one request: ReadAt()
 	ts.RAtAdd++       // no open reader (add one new)
 	ts.RAtSectorRet++ // req in one new sector
-	ts.Check()        //--------------------------------------------------------------------------------
+	ts.Check("B")     //--------------------------------------------------------------------------------
 
 	// test READ: request next byte (same sector; no cache!)
 	if n, err := r.ReadAt(b, 1); n != 1 || err != nil || b[0] != 197 {
@@ -77,7 +77,7 @@ func Test_ReaderAt_ReadAt__without_cache(t *testing.T) {
 	ts.RAtReq++       // request: ReadAt()
 	ts.RAtSectorRet++ // we have no cache -> we have to read the sector again
 	ts.RAtAdd++       // and the open reader can't read the old sector again
-	ts.Check()        //--------------------------------------------------------------------------------
+	ts.Check("C")     //--------------------------------------------------------------------------------
 
 	// test READ: request next SECTOR (use open reader)
 	if n, err := r.ReadAt(b, interf.SectorSize); n != 1 || err != nil || b[0] != 108 {
@@ -88,7 +88,7 @@ func Test_ReaderAt_ReadAt__without_cache(t *testing.T) {
 	ts.RAtReq++       // request: ReadAt()
 	ts.RAtBest++      // reuse open reader for next sector
 	ts.RAtSectorRet++ // read next sector
-	ts.Check()        //--------------------------------------------------------------------------------
+	ts.Check("D")     //--------------------------------------------------------------------------------
 
 	// test READ: skip sector 2 and sector 3 and read sector 4  (reuse open reader[s=1])
 	if n, err := r.ReadAt(b, 4*interf.SectorSize); n != 1 || err != nil || b[0] != 71 {
@@ -101,7 +101,7 @@ func Test_ReaderAt_ReadAt__without_cache(t *testing.T) {
 	ts.RAtSectorSkip++ // skip sector 3
 	ts.RAtSectorSkip++ // skip sector 4
 	ts.RAtSectorRet++  // read next sector
-	ts.Check()         //--------------------------------------------------------------------------------
+	ts.Check("E")      //--------------------------------------------------------------------------------
 
 	// test READ: read bytes from two sectors
 	b = make([]byte, interf.SectorSize)
@@ -115,19 +115,28 @@ func Test_ReaderAt_ReadAt__without_cache(t *testing.T) {
 	ts.RAtAdd++       // and the open reader can't read the old sector again
 	ts.RAtSectorRet++ // read two sectors
 	ts.RAtBest++      // reuse open reader for next sector
-	ts.Check()        //--------------------------------------------------------------------------------
+	ts.Check("F")     //--------------------------------------------------------------------------------
 
 	// test READ: jump to the last sector and read the last byte
 	b = make([]byte, 1)
+	if n, err := r.ReadAt(b, 150*1024*1024); n != 1 || err != nil || b[0] != 254 {
+		t.Fatalf("ERROR: %v (n=%d, b=%v)", err, n, b)
+	}
+
+	// test READ #2: jump to the last sector and read the last byte  WITH OVER READ!
+	b = make([]byte, 2)
 	if n, err := r.ReadAt(b, 150*1024*1024); n != 1 || err != io.EOF || b[0] != 254 {
 		t.Fatalf("ERROR: %v (n=%d, b=%v)", err, n, b)
 	}
 
 	// CHECK internal activities
 	ts.RAtReq++       // request: ReadAt()
+	ts.RAtReq++       // request: ReadAt() #2
 	ts.RAtAdd++       // we can't jump (too far away)
+	ts.RAtAdd++       // read back #2
 	ts.RAtSectorRet++ // read last sector
-	ts.Check()        //--------------------------------------------------------------------------------
+	ts.RAtSectorRet++ // read last sector #2
+	ts.Check("G")     //--------------------------------------------------------------------------------
 
 	// test READ: read over EOF
 	b = make([]byte, 1)
@@ -139,7 +148,7 @@ func Test_ReaderAt_ReadAt__without_cache(t *testing.T) {
 	ts.RAtReq++ // request: ReadAt()
 	ts.RAtAdd++
 	ts.RAtSectorRet++ // read last sector
-	ts.Check()        //--------------------------------------------------------------------------------
+	ts.Check("H")     //--------------------------------------------------------------------------------
 
 	// test READ: read over EOF (special)
 	// When ReadAt returns n < len(p), it returns a non-nil error
@@ -156,7 +165,7 @@ func Test_ReaderAt_ReadAt__without_cache(t *testing.T) {
 	ts.RAtSectorRet++ // read last sector
 	ts.RAtBest++      // reuse open reader for next sector
 	ts.RAtSectorRet++ // return next sector (but this sector does not exist and return len=0 and EOF)
-	ts.Check()        //--------------------------------------------------------------------------------
+	ts.Check("I")     //--------------------------------------------------------------------------------
 
 	// test READ: read in nowhere
 	b = make([]byte, 33)
@@ -168,7 +177,7 @@ func Test_ReaderAt_ReadAt__without_cache(t *testing.T) {
 	ts.RAtReq++
 	ts.RAtAdd++
 	ts.RAtSectorRet++
-	ts.Check() //--------------------------------------------------------------------------------
+	ts.Check("J") //--------------------------------------------------------------------------------
 
 	// PRINT STATS
 	log.Printf("%#v", r.Stat())
@@ -197,7 +206,7 @@ func Test_ReaderAt_ReadAt__with_cache(t *testing.T) {
 	ts.RAtAdd++       // no open reader (add one new)
 	ts.RAtSectorRet++ // req in one new sector
 	ts.CacheSet++     // save sector
-	ts.Check()        //--------------------------------------------------------------------------------
+	ts.Check("K")     //--------------------------------------------------------------------------------
 
 	// test READ: request first byte (same sector; = read back)
 	if n, err := r.ReadAt(b, 1); n != 1 || err != nil || b[0] != 197 {
@@ -207,7 +216,7 @@ func Test_ReaderAt_ReadAt__with_cache(t *testing.T) {
 	// CHECK internal activities
 	ts.RAtReq++   // request: ReadAt()
 	ts.CacheHit++ // use sector from cache
-	ts.Check()    //--------------------------------------------------------------------------------
+	ts.Check("L") //--------------------------------------------------------------------------------
 
 	// test READ: jump (and save skip-sectors)
 	if n, err := r.ReadAt(b, 3*interf.SectorSize); n != 1 || err != nil || b[0] != 26 {
@@ -224,10 +233,42 @@ func Test_ReaderAt_ReadAt__with_cache(t *testing.T) {
 	ts.CacheSet++      // but save the sector in the cache
 	ts.RAtSectorRet++  // read sector 3
 	ts.CacheSet++      // and save the sector in the cache
-	ts.Check()         //--------------------------------------------------------------------------------
+	ts.Check("M")      //--------------------------------------------------------------------------------
 
 	// PRINT STATS
 	log.Printf("%#v", r.Stat())
+}
+
+func Test_ReaderAt_ReadAt_EOF_Bug(t *testing.T) {
+	/*
+		BUG: 16777215 filesize, 16760832 offset and read 1 byte == EOF ????
+	*/
+
+	// init service
+	service := impl.NewRamService(nil, false)
+	_ = impl.InitDemo(service)
+	f, err := service.Files().ByName("special-file-16777215-0.000000.dat")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// init reader
+	r, err := impl.NewReaderAt(f, service, nil, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Close()
+
+	// vars
+	off := int64(16760832)
+	size := f.Size() // 16777215
+	buf := make([]byte, 1)
+
+	// test
+	n, err := r.ReadAt(buf, off)
+	if err != nil {
+		t.Fatalf("\nsize: %d\noff:  %d\nbuf:  %d\nread: %d\nerr:  %v", size, off, len(buf), n, err)
+	}
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -297,46 +338,46 @@ type testStat struct {
 	RAtAddErr     uint64
 }
 
-func (ts *testStat) Check() {
+func (ts *testStat) Check(s string) {
 	m := ts.at.Stat()
 
 	if m["RAtClosing"] != ts.RAtClosing {
-		ts.t.Errorf("RAtClosing: should=%d, is=%d", ts.RAtClosing, m["RAtClosing"])
+		ts.t.Errorf("%s: RAtClosing: should=%d, is=%d", s, ts.RAtClosing, m["RAtClosing"])
 	}
 	if m["RAtNew"] != ts.RAtNew {
-		ts.t.Errorf("RAtNew: should=%d, is=%d", ts.RAtNew, m["RAtNew"])
+		ts.t.Errorf("%s: RAtNew: should=%d, is=%d", s, ts.RAtNew, m["RAtNew"])
 	}
 	if m["CacheSet"] != ts.CacheSet {
-		ts.t.Errorf("CacheSet: should=%d, is=%d", ts.CacheSet, m["CacheSet"])
+		ts.t.Errorf("%s: CacheSet: should=%d, is=%d", s, ts.CacheSet, m["CacheSet"])
 	}
 	if m["CacheMis"] != ts.CacheMis {
-		ts.t.Errorf("CacheMis: should=%d, is=%d", ts.CacheMis, m["CacheMis"])
+		ts.t.Errorf("%s: CacheMis: should=%d, is=%d", s, ts.CacheMis, m["CacheMis"])
 	}
 	if m["CacheHit"] != ts.CacheHit {
-		ts.t.Errorf("CacheHit: should=%d, is=%d", ts.CacheHit, m["CacheHit"])
+		ts.t.Errorf("%s: CacheHit: should=%d, is=%d", s, ts.CacheHit, m["CacheHit"])
 	}
 	if m["RAtClose"] != ts.RAtClose {
-		ts.t.Errorf("RAtClose: should=%d, is=%d", ts.RAtClose, m["RAtClose"])
+		ts.t.Errorf("%s: RAtClose: should=%d, is=%d", s, ts.RAtClose, m["RAtClose"])
 	}
 	if m["RAtReq"] != ts.RAtReq {
-		ts.t.Errorf("RAtReq: should=%d, is=%d", ts.RAtReq, m["RAtReq"])
+		ts.t.Errorf("%s: RAtReq: should=%d, is=%d", s, ts.RAtReq, m["RAtReq"])
 	}
 	if m["RAtRetErr"] != ts.RAtRetErr {
-		ts.t.Errorf("RAtRetErr: should=%d, is=%d", ts.RAtRetErr, m["RAtRetErr"])
+		ts.t.Errorf("%s: AtRetErr: should=%d, is=%d", s, ts.RAtRetErr, m["RAtRetErr"])
 	}
 	if m["RAtSectorSkip"] != ts.RAtSectorSkip {
-		ts.t.Errorf("RAtSectorSkip: should=%d, is=%d", ts.RAtSectorSkip, m["RAtSectorSkip"])
+		ts.t.Errorf("%s: RAtSectorSkip: should=%d, is=%d", s, ts.RAtSectorSkip, m["RAtSectorSkip"])
 	}
 	if m["RAtSectorRet"] != ts.RAtSectorRet {
-		ts.t.Errorf("RAtSectorRet: should=%d, is=%d", ts.RAtSectorRet, m["RAtSectorRet"])
+		ts.t.Errorf("%s: RAtSectorRet: should=%d, is=%d", s, ts.RAtSectorRet, m["RAtSectorRet"])
 	}
 	if m["RAtBest"] != ts.RAtBest {
-		ts.t.Errorf("RAtBest: should=%d, is=%d", ts.RAtBest, m["RAtBest"])
+		ts.t.Errorf("%s: RAtBest: should=%d, is=%d", s, ts.RAtBest, m["RAtBest"])
 	}
 	if m["RAtAdd"] != ts.RAtAdd {
-		ts.t.Errorf("RAtAdd: should=%d, is=%d", ts.RAtAdd, m["RAtAdd"])
+		ts.t.Errorf("%s: RAtAdd: should=%d, is=%d", s, ts.RAtAdd, m["RAtAdd"])
 	}
 	if m["RAtAddErr"] != ts.RAtAddErr {
-		ts.t.Errorf("RAtAddErr: should=%d, is=%d", ts.RAtAddErr, m["RAtAddErr"])
+		ts.t.Errorf("%s: RAtAddErr: should=%d, is=%d", s, ts.RAtAddErr, m["RAtAddErr"])
 	}
 }
