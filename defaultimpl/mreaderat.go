@@ -149,6 +149,11 @@ func (r *_MReaderAt) ReadAt(p []byte, off int64) (int, error) {
 		}
 	}
 
+	// fix EOF
+	if len(p) > 0 && read <= 0 && err == nil {
+		err = io.EOF
+	}
+
 	// return
 	r.stat.RAtRet(r.multiFileId, off, len(p), read, err) // DEBUG
 	return read, err
