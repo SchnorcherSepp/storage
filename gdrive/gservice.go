@@ -30,13 +30,15 @@ type _GService struct {
 	files          interf.Files
 	initialized    bool
 	startPageToken string
+	skipFullInit   bool
 }
 
 // NewGService returns an interface to Google Drive. The parent specifies the folder
 // with the active files. If the value is "root" or empty, the root directory of Google Drive is used.
-// indexCacheFile is used to speed up Update.
+// indexCacheFile is used to speed up Update (files are available faster).
+// With skipFullInit = true, the init update call ends with a successful loading of indexCacheFile.
 // readerCache=nil disable the cache for ReaderAt() and MultiReaderAt()
-func NewGService(parent, indexCacheFile string, oauth *google.Service, readerCache interf.Cache, debugLog bool) interf.Service {
+func NewGService(parent, indexCacheFile string, skipFullInit bool, oauth *google.Service, readerCache interf.Cache, debugLog bool) interf.Service {
 	s := &_GService{
 		google:         oauth,
 		parent:         parent,
@@ -47,6 +49,7 @@ func NewGService(parent, indexCacheFile string, oauth *google.Service, readerCac
 		files:          impl.NewFiles(nil), // empty list, set by Update()
 		initialized:    false,
 		startPageToken: "",
+		skipFullInit:   skipFullInit,
 	}
 
 	// root fix: replace root alias with valid folder id
@@ -232,6 +235,10 @@ func (s *_GService) initFiles() error {
 			log.Printf("ERROR: %s/initFiles: UpdateFileList() failed with indexcache: %v", packageName, err)
 		} else {
 			log.Printf("INFO: %s/initFiles: speed up initialization with indexcache", packageName)
+			if s.skipFullInit {
+				log.Printf("INFO: %s/initFiles: skip full initialisation", packageName)
+				return nil // <----------- EXIT: use fast update only
+			}
 		}
 	} else {
 		log.Printf("INFO: %s/initFiles: initialization without indexcache", packageName)

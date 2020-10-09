@@ -32,14 +32,14 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	testServiceRO = gdrive.NewGService("root", testIndexCacheFile, testOauthRO, nil, true)
+	testServiceRO = gdrive.NewGService("root", testIndexCacheFile, false, testOauthRO, nil, true)
 
 	// read/write oauth
 	testOauthWR, err = gdrive.OAuth(testClientCredFile, testTokenFileWrite, false)
 	if err != nil {
 		panic(err)
 	}
-	testServiceWR = gdrive.NewGService("", testIndexCacheFile, testOauthWR, nil, true)
+	testServiceWR = gdrive.NewGService("", testIndexCacheFile, false, testOauthWR, nil, true)
 
 	// write demo files
 	err = impl.InitDemo(testServiceWR)
@@ -158,7 +158,7 @@ func TestService_Update(t *testing.T) {
 	indexCache := path.Join(os.TempDir(), "cacheSigTest.dat")
 	_ = os.Remove(indexCache)
 	cache := impl.NewCache(1)
-	service := gdrive.NewGService("root", indexCache, testOauthWR, cache, true)
+	service := gdrive.NewGService("root", indexCache, false, testOauthWR, cache, true)
 
 	/*
 				For this test we have to check the log output.
@@ -214,7 +214,7 @@ func TestService_Update(t *testing.T) {
 	buf = bytes.NewBufferString("") // new buffer
 	log.SetOutput(buf)              // write logs to buffer
 
-	service = gdrive.NewGService("root", indexCache, testOauthWR, cache, true)
+	service = gdrive.NewGService("root", indexCache, false, testOauthWR, cache, true)
 	err = service.Update()
 
 	if err != nil || len(service.Files().All()) <= 1000 || !strings.Contains(buf.String(), "speed up initialization with indexcache") {
@@ -225,8 +225,8 @@ func TestService_Update(t *testing.T) {
 	buf = bytes.NewBufferString("") // new buffer
 	log.SetOutput(buf)              // write logs to buffer
 
-	service = gdrive.NewGService("xXx", indexCache, testOauthRO, cache, true) // change parent folder to invalidate cacheSig
-	_ = service.Update()                                                      // ignore errors
+	service = gdrive.NewGService("xXx", indexCache, false, testOauthRO, cache, true) // change parent folder to invalidate cacheSig
+	_ = service.Update()                                                             // ignore errors
 
 	if !strings.Contains(buf.String(), "wrong indexcache signature") {
 		t.Fatalf("test fail")
