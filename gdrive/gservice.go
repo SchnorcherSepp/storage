@@ -242,9 +242,13 @@ func (s *_GService) initFiles() error {
 			log.Printf("ERROR: %s/initFiles: UpdateFileList() failed with indexcache: %v", packageName, err)
 		} else {
 			log.Printf("INFO: %s/initFiles: speed up initialization with indexcache", packageName)
+			// fast init (optional)
 			if s.skipFullInit {
+				s.mux.Lock() // <-------------- LOCK
+				s.initialized = true
+				s.mux.Unlock() // <------------ UNLOCK
 				log.Printf("INFO: %s/initFiles: skip full initialisation", packageName)
-				return nil // <----------- EXIT: use fast update only
+				return nil // EXIT
 			}
 		}
 	} else {
