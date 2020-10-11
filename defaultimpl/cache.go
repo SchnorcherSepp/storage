@@ -17,8 +17,9 @@ var _ interf.Cache = (*_Cache)(nil)
 // The cache is always at least 1024 * SectorSize big (~17 MB).
 // If possible, there should only be one common large cache (reuse the object in your program).
 type _Cache struct {
-	cache *freecache.Cache // RAM cache for sectors
-	pool  *bpool.BytePool  // buffer pool
+	cache     *freecache.Cache // RAM cache for sectors
+	pool      *bpool.BytePool  // buffer pool
+	cacheSize int64
 }
 
 // NewCache return the default implementation of interf.Cache.
@@ -36,8 +37,9 @@ func NewCache(cacheSizeMB int) interf.Cache {
 	debug.SetGCPercent(20)
 
 	return &_Cache{
-		cache: fCache,
-		pool:  bpool.NewBytePool(300, interf.SectorSize), // ~ 5 MB
+		cache:     fCache,
+		pool:      bpool.NewBytePool(300, interf.SectorSize), // ~ 5 MB
+		cacheSize: int64(cacheSize),
 	}
 }
 
@@ -70,6 +72,13 @@ func (c *_Cache) Set(fileId string, sector uint64, data []byte) error {
 //   defer c.Pool().Put(buf)
 func (c *_Cache) Pool() *bpool.BytePool {
 	return c.pool
+}
+
+// @see interf.Cache
+//
+// Size returns the max. capacity of this cache in bytes.
+func (c *_Cache) Size() int64 {
+	return c.cacheSize
 }
 
 //-----  HELPER  -----------------------------------------------------------------------------------------------------//

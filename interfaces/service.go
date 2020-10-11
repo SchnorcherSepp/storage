@@ -69,4 +69,7 @@ type Service interface {
 	// The connection must be closed manually with Close() after use.
 	// This method is thread-safe.
 	MultiReaderAt(list []File) (ReaderAt, error)
+
+	// Cache returns the internal cache instance. Can be NIL.
+	Cache() Cache
 }

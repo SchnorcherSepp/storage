@@ -23,4 +23,7 @@ type Cache interface {
 	//   buf := c.Pool().Get()
 	//   defer c.Pool().Put(buf)
 	Pool() *bpool.BytePool
+
+	// Size returns the max. capacity of this cache in bytes.
+	Size() int64
 }

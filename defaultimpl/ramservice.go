@@ -175,6 +175,10 @@ func (s *_RamService) MultiReaderAt(list []interf.File) (interf.ReaderAt, error)
 	}
 }
 
+func (s *_RamService) Cache() interf.Cache {
+	return s.cache
+}
+
 //--------  Helper  --------------------------------------------------------------------------------------------------//
 
 // genId generate a random (unique) fileId for new files.

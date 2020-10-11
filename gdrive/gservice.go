@@ -166,7 +166,7 @@ func (s *_GService) Reader(file interf.File, off int64) (io.ReadCloser, error) {
 	return s.LimitedReader(file, off, interf.MaxFileSize)
 }
 
-// LimitedReader is the implementation of Service.Reader()
+// LimitedReader is the implementation of Service.LimitedReader()
 //
 // Reader enables read access to a file identified by the file id.
 // The connection must be closed manually with Close() after use.
@@ -192,10 +192,12 @@ func (s *_GService) LimitedReader(file interf.File, off int64, n int64) (io.Read
 	return resp.Body, nil
 }
 
+// ReaderAt is the implementation of Service.ReaderAt()
 func (s *_GService) ReaderAt(file interf.File) (interf.ReaderAt, error) {
 	return impl.NewReaderAt(file, s, s.readerCache, s.debugLog)
 }
 
+// MultiReaderAt is the implementation of Service.MultiReaderAt()
 func (s *_GService) MultiReaderAt(list []interf.File) (interf.ReaderAt, error) {
 	if len(list) == 1 {
 		// use the normal ReaderAt for single files
@@ -204,6 +206,11 @@ func (s *_GService) MultiReaderAt(list []interf.File) (interf.ReaderAt, error) {
 		// MultiReaderAt
 		return impl.NewMultiReaderAt(list, s, s.readerCache, s.debugLog)
 	}
+}
+
+// Cache returns the internal cache instance. Can be NIL.
+func (s *_GService) Cache() interf.Cache {
+	return s.readerCache
 }
 
 //---------  Helper  -------------------------------------------------------------------------------------------------//
