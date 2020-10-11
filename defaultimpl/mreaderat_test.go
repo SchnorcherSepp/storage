@@ -16,34 +16,34 @@ func TestNewMultiReaderAt(t *testing.T) {
 	_, s, f := initTestFileAndTestService(t)
 
 	// test with invalid file and invalid service
-	if _, err := impl.NewMultiReaderAt(nil, s, nil, true); err == nil {
+	if _, err := impl.NewMultiReaderAt(nil, s, nil, impl.DebugHigh); err == nil {
 		t.Fatal("no error with invalid file")
 	}
-	if _, err := impl.NewMultiReaderAt(f, nil, nil, true); err == nil {
+	if _, err := impl.NewMultiReaderAt(f, nil, nil, impl.DebugHigh); err == nil {
 		t.Fatal("no error with invalid file")
 	}
 
 	// different file size
-	_, err := impl.NewMultiReaderAt([]interf.File{f[1], f[0], f[1]}, s, nil, true)
+	_, err := impl.NewMultiReaderAt([]interf.File{f[1], f[0], f[1]}, s, nil, impl.DebugHigh)
 	if err == nil {
 		t.Fatal("no error")
 	}
 
 	// only one file
-	_, err = impl.NewMultiReaderAt([]interf.File{f[1]}, s, nil, true)
+	_, err = impl.NewMultiReaderAt([]interf.File{f[1]}, s, nil, impl.DebugHigh)
 	if err == nil {
 		t.Fatal("no error")
 	}
 
 	// test without cache
-	_, err = impl.NewMultiReaderAt(f, s, nil, true)
+	_, err = impl.NewMultiReaderAt(f, s, nil, impl.DebugHigh)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// test with cache
 	c := impl.NewCache(1)
-	_, err = impl.NewMultiReaderAt(f, s, c, true)
+	_, err = impl.NewMultiReaderAt(f, s, c, impl.DebugHigh)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,7 +51,7 @@ func TestNewMultiReaderAt(t *testing.T) {
 
 func Test_MultiReaderAt_ReadAt(t *testing.T) {
 	_, s, f := initTestFileAndTestService(t)
-	r, err := impl.NewMultiReaderAt(f, s, nil, true)
+	r, err := impl.NewMultiReaderAt(f, s, nil, impl.DebugHigh)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,7 +116,7 @@ func Test_MReaderAt_ReadAt__RandomRead(t *testing.T) {
 		buf := make([]byte, 128)
 
 		// multi reader
-		r, err := impl.NewMultiReaderAt(files, service, cache, false)
+		r, err := impl.NewMultiReaderAt(files, service, cache, impl.DebugOff)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -156,7 +156,7 @@ func Test_MReaderAt_ReadAt__RandomRead(t *testing.T) {
 func TestRace_MultiReaderAt(t *testing.T) {
 	_, s, f := initTestFileAndTestService(t)
 
-	r, err := impl.NewMultiReaderAt(f, s, nil, false) // test without cache for more inner code tests
+	r, err := impl.NewMultiReaderAt(f, s, nil, impl.DebugOff) // test without cache for more inner code tests
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -25,7 +25,7 @@ type _GService struct {
 	parent         string
 	cacheFile      string
 	readerCache    interf.Cache
-	debugLog       bool
+	debugLvl       uint8
 	mux            *sync.RWMutex
 	files          interf.Files
 	initialized    bool
@@ -38,13 +38,14 @@ type _GService struct {
 // indexCacheFile is used to speed up Update (files are available faster).
 // With skipFullInit = true, the init update call ends with a successful loading of indexCacheFile.
 // readerCache=nil disable the cache for ReaderAt() and MultiReaderAt()
-func NewGService(parent, indexCacheFile string, skipFullInit bool, oauth *google.Service, readerCache interf.Cache, debugLog bool) interf.Service {
+// debugLvl (@see impl.DebugHigh and impl.DebugOff)
+func NewGService(parent, indexCacheFile string, skipFullInit bool, oauth *google.Service, readerCache interf.Cache, debugLvl uint8) interf.Service {
 	s := &_GService{
 		google:         oauth,
 		parent:         parent,
 		cacheFile:      indexCacheFile,
 		readerCache:    readerCache,
-		debugLog:       debugLog,
+		debugLvl:       debugLvl,
 		mux:            new(sync.RWMutex),
 		files:          impl.NewFiles(nil), // empty list, set by Update()
 		initialized:    false,
@@ -194,7 +195,7 @@ func (s *_GService) LimitedReader(file interf.File, off int64, n int64) (io.Read
 
 // ReaderAt is the implementation of Service.ReaderAt()
 func (s *_GService) ReaderAt(file interf.File) (interf.ReaderAt, error) {
-	return impl.NewReaderAt(file, s, s.readerCache, s.debugLog)
+	return impl.NewReaderAt(file, s, s.readerCache, s.debugLvl)
 }
 
 // MultiReaderAt is the implementation of Service.MultiReaderAt()
@@ -204,7 +205,7 @@ func (s *_GService) MultiReaderAt(list []interf.File) (interf.ReaderAt, error) {
 		return s.ReaderAt(list[0])
 	} else {
 		// MultiReaderAt
-		return impl.NewMultiReaderAt(list, s, s.readerCache, s.debugLog)
+		return impl.NewMultiReaderAt(list, s, s.readerCache, s.debugLvl)
 	}
 }
 

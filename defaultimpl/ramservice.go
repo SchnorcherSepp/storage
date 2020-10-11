@@ -24,7 +24,7 @@ var _ interf.Service = (*_RamService)(nil)
 // Service is the central interface to access the storage.
 type _RamService struct {
 	cache    interf.Cache
-	debugLog bool
+	debugLvl uint8
 	hidden   interf.Files
 	files    interf.Files
 	data     map[string][]byte
@@ -33,10 +33,10 @@ type _RamService struct {
 
 // NewRamService return the RAM implementation of interf.Service.
 // The data are only in RAM. This implementation is mainly for testing.
-func NewRamService(cache interf.Cache, debugLog bool) interf.Service {
+func NewRamService(cache interf.Cache, debugLvl uint8) interf.Service {
 	return &_RamService{
 		cache:    cache,
-		debugLog: debugLog,
+		debugLvl: debugLvl,
 		hidden:   NewFiles(nil),
 		files:    NewFiles(nil),
 		data:     make(map[string][]byte),
@@ -162,7 +162,7 @@ func (s *_RamService) LimitedReader(file interf.File, off int64, n int64) (io.Re
 }
 
 func (s *_RamService) ReaderAt(file interf.File) (interf.ReaderAt, error) {
-	return NewReaderAt(file, s, s.cache, s.debugLog)
+	return NewReaderAt(file, s, s.cache, s.debugLvl)
 }
 
 func (s *_RamService) MultiReaderAt(list []interf.File) (interf.ReaderAt, error) {
@@ -171,7 +171,7 @@ func (s *_RamService) MultiReaderAt(list []interf.File) (interf.ReaderAt, error)
 		return s.ReaderAt(list[0])
 	} else {
 		// MultiReaderAt
-		return NewMultiReaderAt(list, s, s.cache, s.debugLog)
+		return NewMultiReaderAt(list, s, s.cache, s.debugLvl)
 	}
 }
 

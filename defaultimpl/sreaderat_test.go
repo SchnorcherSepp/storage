@@ -11,7 +11,7 @@ import (
 func Test_SubReaderAt_ReadAt_f0(t *testing.T) {
 	// build test Service
 	cache := impl.NewCache(1)
-	s := impl.NewRamService(cache, false)
+	s := impl.NewRamService(cache, impl.DebugOff)
 	if err := impl.InitDemo(s); err != nil {
 		t.Fatal(err)
 	}
@@ -24,15 +24,15 @@ func Test_SubReaderAt_ReadAt_f0(t *testing.T) {
 
 	// test
 	buf := make([]byte, 3)
-	ra, err := impl.NewSubReaderAt(f, s, cache, false, 0, 0)
+	ra, err := impl.NewSubReaderAt(f, s, cache, impl.DebugOff, 0, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
-	rb, err := impl.NewSubReaderAt(f, s, cache, false, 0, 15)
+	rb, err := impl.NewSubReaderAt(f, s, cache, impl.DebugOff, 0, 15)
 	if err != nil {
 		t.Fatal(err)
 	}
-	rc, err := impl.NewSubReaderAt(f, s, cache, false, 1, 1)
+	rc, err := impl.NewSubReaderAt(f, s, cache, impl.DebugOff, 1, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,7 +50,7 @@ func Test_SubReaderAt_ReadAt_f0(t *testing.T) {
 func Test_SubReaderAt_ReadAt_f1(t *testing.T) {
 	// build test Service
 	cache := impl.NewCache(1)
-	s := impl.NewRamService(cache, false)
+	s := impl.NewRamService(cache, impl.DebugOff)
 	if err := impl.InitDemo(s); err != nil {
 		t.Fatal(err)
 	}
@@ -64,7 +64,7 @@ func Test_SubReaderAt_ReadAt_f1(t *testing.T) {
 	// test A: normal limit
 	// "small-test-file-9.dat"
 	buf := make([]byte, 100)
-	ra, err := impl.NewSubReaderAt(f, s, cache, false, 0, 15)
+	ra, err := impl.NewSubReaderAt(f, s, cache, impl.DebugOff, 0, 15)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -107,7 +107,7 @@ func Test_SubReaderAt_ReadAt_f1(t *testing.T) {
 	// test B: normal limit with offset
 	// "small-test-file-9.dat"
 	buf = make([]byte, 100)
-	rb, err := impl.NewSubReaderAt(f, s, cache, false, 5, 15)
+	rb, err := impl.NewSubReaderAt(f, s, cache, impl.DebugOff, 5, 15)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -144,7 +144,7 @@ func Test_SubReaderAt_ReadAt_f1(t *testing.T) {
 	// test C: limit == filesize
 	// "small-test-file-9.dat"
 	buf = make([]byte, 100)
-	rc, err := impl.NewSubReaderAt(f, s, cache, false, 5, 16)
+	rc, err := impl.NewSubReaderAt(f, s, cache, impl.DebugOff, 5, 16)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -193,7 +193,7 @@ func Test_SubReaderAt_ReadAt_f1(t *testing.T) {
 	// test D: limit over file size
 	// "small-test-file-9.dat"
 	buf = make([]byte, 3)
-	rd, err := impl.NewSubReaderAt(f, s, cache, false, 17, 33)
+	rd, err := impl.NewSubReaderAt(f, s, cache, impl.DebugOff, 17, 33)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -226,7 +226,7 @@ func Test_SubReaderAt_ReadAt_f1(t *testing.T) {
 func TestRace_SubReaderAt(t *testing.T) {
 	f, s, _ := initTestFileAndTestService(t)
 
-	r, err := impl.NewSubReaderAt(f, s, nil, false, 1, 999)
+	r, err := impl.NewSubReaderAt(f, s, nil, impl.DebugOff, 1, 999)
 	if err != nil {
 		t.Fatal(err)
 	}

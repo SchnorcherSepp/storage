@@ -34,7 +34,7 @@ type _ReaderAt struct {
 // NewReaderAt creates a new interf.ReaderAt object for random read access to the file.
 // No connections are made before the first call of ReadAt().
 // Is cache = nil, the cache is disabled.
-func NewReaderAt(file interf.File, service interf.ReaderService, cache interf.Cache, debugLog bool) (interf.ReaderAt, error) {
+func NewReaderAt(file interf.File, service interf.ReaderService, cache interf.Cache, debugLvl uint8) (interf.ReaderAt, error) {
 	// check input
 	// the cache can be nil!
 	if file == nil || service == nil {
@@ -43,7 +43,7 @@ func NewReaderAt(file interf.File, service interf.ReaderService, cache interf.Ca
 
 	// ReaderAt statistic
 	stat := &_ReaderStat{
-		logging:     debugLog, // enable debug logging
+		debugLvl:    debugLvl, // enable debug logging [0, 1, 2] (level: high=2)
 		packageName: "impl",   // text for debug logging
 	}
 

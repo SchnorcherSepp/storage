@@ -13,22 +13,22 @@ func TestNewReaderAt(t *testing.T) {
 	f, s, _ := initTestFileAndTestService(t)
 
 	// test with invalid file and invalid service
-	if _, err := impl.NewReaderAt(nil, s, nil, true); err == nil {
+	if _, err := impl.NewReaderAt(nil, s, nil, impl.DebugHigh); err == nil {
 		t.Fatal("no error with invalid file")
 	}
-	if _, err := impl.NewReaderAt(f, nil, nil, true); err == nil {
+	if _, err := impl.NewReaderAt(f, nil, nil, impl.DebugHigh); err == nil {
 		t.Fatal("no error with invalid file")
 	}
 
 	// test without cache
-	_, err := impl.NewReaderAt(f, s, nil, true)
+	_, err := impl.NewReaderAt(f, s, nil, impl.DebugHigh)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// test with cache
 	c := impl.NewCache(1)
-	_, err = impl.NewReaderAt(f, s, c, true)
+	_, err = impl.NewReaderAt(f, s, c, impl.DebugHigh)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +38,7 @@ func Test_ReaderAt_ReadAt__without_cache(t *testing.T) {
 	f, s, _ := initTestFileAndTestService(t)
 
 	// ----------------- test without cache (for more internal tests) ---------------------------
-	r, err := impl.NewReaderAt(f, s, nil, true)
+	r, err := impl.NewReaderAt(f, s, nil, impl.DebugHigh)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -187,7 +187,7 @@ func Test_ReaderAt_ReadAt__with_cache(t *testing.T) {
 	f, s, _ := initTestFileAndTestService(t)
 	c := impl.NewCache(1)
 
-	r, err := impl.NewReaderAt(f, s, c, true)
+	r, err := impl.NewReaderAt(f, s, c, impl.DebugHigh)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -245,7 +245,7 @@ func Test_ReaderAt_ReadAt_EOF_Bug(t *testing.T) {
 	*/
 
 	// init service
-	service := impl.NewRamService(nil, false)
+	service := impl.NewRamService(nil, impl.DebugOff)
 	_ = impl.InitDemo(service)
 	f, err := service.Files().ByName("special-file-16777215-0.000000.dat")
 	if err != nil {
@@ -253,7 +253,7 @@ func Test_ReaderAt_ReadAt_EOF_Bug(t *testing.T) {
 	}
 
 	// init reader
-	r, err := impl.NewReaderAt(f, service, nil, false)
+	r, err := impl.NewReaderAt(f, service, nil, impl.DebugOff)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -276,7 +276,7 @@ func Test_ReaderAt_ReadAt_EOF_Bug(t *testing.T) {
 func TestRace_ReaderAt(t *testing.T) {
 	f, s, _ := initTestFileAndTestService(t)
 
-	r, err := impl.NewReaderAt(f, s, nil, false) // test without cache for more inner code tests
+	r, err := impl.NewReaderAt(f, s, nil, impl.DebugOff) // test without cache for more inner code tests
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -304,7 +304,7 @@ func TestRace_ReaderAt(t *testing.T) {
 //--------  HELPER  --------------------------------------------------------------------------------------------------//
 
 func initTestFileAndTestService(t *testing.T) (interf.File, interf.Service, []interf.File) {
-	s := impl.NewRamService(nil, false)
+	s := impl.NewRamService(nil, impl.DebugOff)
 	if err := impl.InitDemo(s); err != nil {
 		t.Fatal(err)
 	}

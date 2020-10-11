@@ -30,10 +30,10 @@ type _MReaderAt struct {
 // NewMultiReader combine two or more ReaderAt and behave like a normal ReaderAT for a single file.
 // All files except the last file must be the same size.
 // There must be at least two or more files!
-func NewMultiReaderAt(files []interf.File, service interf.ReaderService, cache interf.Cache, debugLog bool) (interf.ReaderAt, error) {
+func NewMultiReaderAt(files []interf.File, service interf.ReaderService, cache interf.Cache, debugLvl uint8) (interf.ReaderAt, error) {
 	// ReaderAt statistic
 	stat := &_ReaderStat{
-		logging:     debugLog,       // enable debug logging
+		debugLvl:    debugLvl,       // enable debug logging [0, 1, 2] (level: high=2)
 		packageName: "[MULTI] impl", // text for debug logging
 	}
 
@@ -54,7 +54,7 @@ func NewMultiReaderAt(files []interf.File, service interf.ReaderService, cache i
 	h := md5.New()
 	readers := make([]interf.ReaderAt, len(files))
 	for i, f := range files {
-		r, err := NewReaderAt(f, service, cache, debugLog)
+		r, err := NewReaderAt(f, service, cache, debugLvl)
 		if err != nil {
 			// error from NewReaderAt()
 			return nil, err

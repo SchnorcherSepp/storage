@@ -70,7 +70,7 @@ func Test_bestConn(t *testing.T) {
 
 func Test_addConn(t *testing.T) {
 	// init ram service
-	s := NewRamService(nil, false)
+	s := NewRamService(nil, DebugOff)
 	if err := InitDemo(s); err != nil {
 		t.Fatal(err)
 	}

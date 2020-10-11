@@ -23,10 +23,10 @@ type _SubReaderAt struct {
 // No connections are made before the first call of ReadAt().
 // Is cache = nil, the cache is disabled.
 // The offset off is the part start point and n the part size.
-func NewSubReaderAt(file interf.File, service interf.ReaderService, cache interf.Cache, debugLog bool, off, n int64) (interf.ReaderAt, error) {
+func NewSubReaderAt(file interf.File, service interf.ReaderService, cache interf.Cache, debugLvl uint8, off, n int64) (interf.ReaderAt, error) {
 
 	// get normal ReaderAt
-	rAt, err := NewReaderAt(file, service, cache, debugLog)
+	rAt, err := NewReaderAt(file, service, cache, debugLvl)
 
 	// build SubReaderAt
 	return &_SubReaderAt{
