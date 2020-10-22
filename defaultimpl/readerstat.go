@@ -9,8 +9,16 @@ import (
 	"sync/atomic"
 )
 
+// DebugOff deactivates all debug messages. Errors, warnings or information are still printed.
 const DebugOff = 0
+
+// DebugLow shows debug messages that happen very rarely during operation (to keep the log files small).
+const DebugLow = 1
+
+// DebugHigh shows all debug messages.
 const DebugHigh = 2
+
+//--------------------------------------------------------------------------------------------------------------------//
 
 type _ReaderStat struct {
 	debugLvl    uint8  // enable debug logging [0, 1, 2] (level: high=2)
@@ -73,7 +81,9 @@ func (s *_ReaderStat) PrintStatAfterClose(fileId string) {
 		sb.WriteString(fmt.Sprintf("%d", v))
 	}
 
-	log.Printf("INFO: %s/stat.PrintStatAfterClose: fileId=%s: %s", s.packageName, fileId, sb.String())
+	if s.debugLvl >= DebugLow { // Debug level: low=1
+		log.Printf("DEBUG: %s/stat.PrintStatAfterClose: fileId=%s: %s", s.packageName, fileId, sb.String())
+	}
 }
 
 // ------------------------------------------------------------------------------------------------------------------ //
