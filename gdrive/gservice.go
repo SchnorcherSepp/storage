@@ -143,6 +143,7 @@ func (s *_GService) Save(name string, r io.Reader, max int64) (file interf.File,
 	}
 
 	// success
+	// The Google API does not set the values 'size' and 'md5'!
 	return impl.NewFile(f.Id, f.Name, ParseTime(time.Now().Format("2006-01-02T15:04:05.700Z")), f.Size, f.Md5Checksum), nil
 }
 

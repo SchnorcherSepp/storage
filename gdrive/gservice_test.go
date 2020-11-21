@@ -240,15 +240,22 @@ func TestService_Update(t *testing.T) {
 //--------------------------------------------------------------------------------------------------------------------//
 
 func TestRace_Update(t *testing.T) {
+	var retErr = make([]error, 5)
+
+	// test
 	var wg sync.WaitGroup
-	wg.Add(5)
-	for n := 0; n < 5; n++ {
+	wg.Add(len(retErr))
+	for n := 0; n < len(retErr); n++ {
+		var nn = n
 		go func() {
 			//------------------------------
-			for i := 0; i < 6; i++ {
+			for i := 0; i < 12; i++ {
 				err := testServiceWR.Update()
 				if err != nil {
-					t.Fatal(err)
+					fmt.Printf("### %v\n", err)
+					if !strings.Contains(err.Error(), "User Rate Limit Exceeded") {
+						retErr[nn] = err
+					}
 				}
 			}
 			//------------------------------
@@ -256,4 +263,11 @@ func TestRace_Update(t *testing.T) {
 		}()
 	}
 	wg.Wait()
+
+	// check
+	for i, e := range retErr {
+		if e != nil {
+			t.Error(i, e)
+		}
+	}
 }
